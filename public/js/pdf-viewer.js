@@ -1,4 +1,4 @@
-const url = BOOK_URL;
+const url = window.BOOK_URL;
 
 let pdfDoc = null,
     pageNum = 1,
@@ -161,8 +161,8 @@ pdfjsLib.getDocument(url).promise.then(function (pdfDoc_) {
     pageCountSpan.textContent = pdfDoc.numPages;
 
     // Auto-Resume
-    if (BOOK_LAST_READ && typeof BOOK_LAST_READ === 'number') {
-        pageNum = BOOK_LAST_READ;
+    if (window.BOOK_LAST_READ && typeof window.BOOK_LAST_READ === 'number') {
+        pageNum = window.BOOK_LAST_READ;
     }
 
     renderPage(pageNum);
@@ -186,8 +186,8 @@ window.addEventListener('wheel', (e) => {
  * Save Progress
  */
 function saveProgress(page) {
-    if (!BOOK_ID) return;
-    fetch(`/api/book/${BOOK_ID}/progress`, {
+    if (!window.BOOK_ID) return;
+    fetch(`/api/book/${window.BOOK_ID}/progress`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ position: page })

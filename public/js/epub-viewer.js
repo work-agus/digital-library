@@ -1,4 +1,4 @@
-const url = BOOK_URL;
+const url = window.BOOK_URL;
 
 const book = ePub(url);
 
@@ -19,7 +19,7 @@ rendition.themes.register("dark", {
 });
 
 // Display - Auto Resume
-const displayed = rendition.display(BOOK_LAST_READ || undefined);
+const displayed = rendition.display(window.BOOK_LAST_READ || undefined);
 
 // Apply initial request
 if (localStorage.theme === 'dark') {
@@ -83,8 +83,8 @@ rendition.on("relocated", function (location) {
 });
 
 function saveProgress(cfi) {
-    if (!BOOK_ID) return;
-    fetch(`/api/book/${BOOK_ID}/progress`, {
+    if (!window.BOOK_ID) return;
+    fetch(`/api/book/${window.BOOK_ID}/progress`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ position: cfi })
