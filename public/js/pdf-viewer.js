@@ -160,5 +160,43 @@ pdfjsLib.getDocument(url).promise.then(function (pdfDoc_) {
     pdfDoc = pdfDoc_;
     pageCountSpan.textContent = pdfDoc.numPages;
 
+    // Auto-Resume
+    if (BOOK_LAST_READ && typeof BOOK_LAST_READ === 'number') {
+        pageNum = BOOK_LAST_READ;
+    }
+
     renderPage(pageNum);
 });
+
+/**
+ * Scroll Functionality (Mouse Wheel)
+ */
+window.addEventListener('wheel', (e) => {
+    // Only if not zooming (ctrl key usually implied zoom)
+    if (e.ctrlKey) return;
+
+    if (e.deltaY > 0) {
+        onNextPage();
+    } else {
+        onPrevPage();
+    }
+});
+
+/**
+ * Save Progress
+ */
+function saveProgress(page) {
+    if (!BOOK_ID) return;
+    fetch(`/api/book/${BOOK_ID}/progress`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ position: page })
+    }).catch(err => console.error('Error saving progress:', err));
+}
+
+// Hook into renderPage to save progress (debounced slightly or just per page turn)
+const originalRenderPage = renderPage;
+renderPage = function (num) {
+    originalRenderPage(num);
+    saveProgress(num);
+}

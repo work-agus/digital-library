@@ -17,9 +17,13 @@ app.use(express.urlencoded({ extended: true }));
 const DATA_FILE = path.join(__dirname, 'data', 'library.json');
 const UPLOAD_DIR = path.join(__dirname, 'public', 'uploads');
 
-// Ensure upload directory exists
+// Ensure upload and data directories exist
 if (!fs.existsSync(UPLOAD_DIR)) {
     fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+}
+const DATA_DIR = path.dirname(DATA_FILE);
+if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
 // Multer Setup
@@ -150,6 +154,28 @@ app.post('/api/book/:id/highlight', (req, res) => {
     }
 
     res.json({ success: true, highlights: books[bookIndex].highlights });
+});
+
+// API: Save Reading Progress
+app.post('/api/book/:id/progress', (req, res) => {
+    const books = getLibrary();
+    const bookIndex = books.findIndex(b => b.id === req.params.id);
+
+    if (bookIndex === -1) {
+        return res.status(404).json({ error: 'Book not found' });
+    }
+
+    const { position } = req.body; // Can be page number (PDF) or CFI (EPUB)
+
+    if (position) {
+        books[bookIndex].lastRead = {
+            position: position,
+            timestamp: new Date().toISOString()
+        };
+        saveLibrary(books);
+    }
+
+    res.json({ success: true });
 });
 
 app.listen(PORT, () => {

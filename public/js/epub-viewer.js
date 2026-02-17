@@ -18,7 +18,8 @@ rendition.themes.register("dark", {
     a: { color: "#6366f1" } // Indigo-500
 });
 
-const displayed = rendition.display();
+// Display - Auto Resume
+const displayed = rendition.display(BOOK_LAST_READ || undefined);
 
 // Apply initial request
 if (localStorage.theme === 'dark') {
@@ -75,12 +76,20 @@ document.addEventListener("keyup", function (e) {
 
 // Update "Page" info on relocation
 rendition.on("relocated", function (location) {
-    // EPUB locations are CFIs, not simple pages.
-    // We can try to map if locations are generated, but for simplicity show vague progress or chapters.
-    // console.log(location);
-    // Updating input to show start cfi or percentage might be too technical.
-    // Let's rely on visual scroll/pagination.
+    // Save progress
+    if (location.start.cfi) {
+        saveProgress(location.start.cfi);
+    }
 });
+
+function saveProgress(cfi) {
+    if (!BOOK_ID) return;
+    fetch(`/api/book/${BOOK_ID}/progress`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ position: cfi })
+    }).catch(err => console.error('Error saving progress:', err));
+}
 
 // Highlighting
 rendition.on("selected", function (cfiRange, contents) {
