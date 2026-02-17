@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reading: <%= book.title %>
+    </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    </script>
+
+    <!-- ePub.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        #viewer-container {
+            height: calc(100vh - 64px);
+            /* Subtract header height */
+            overflow: auto;
+            background-color: #525659;
+            /* PDF viewer standard grey */
+            position: relative;
+        }
+
+        /* EPUB specific */
+        #epub-viewer {
+            background-color: #fff;
+            height: 100%;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* PDF specific */
+        .pdf-page-canvas {
+            display: block;
+            margin: 20px auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Reading modes */
+        body.sepia #epub-viewer {
+            background-color: #f6ecd9 !important;
+        }
+
+        body.dark #epub-viewer {
+            background-color: #333 !important;
+            color: #ddd !important;
+        }
+
+        body.dark #viewer-container {
+            background-color: #1a1a1a;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 h-screen flex flex-col">
+
+    <!-- Header / Toolbar -->
+    <header class="h-16 bg-white shadow-sm flex items-center justify-between px-4 z-40 relative">
+        <div class="flex items-center">
+            <a href="/" class="text-gray-500 hover:text-gray-700 mr-4">
+                <i class="fas fa-arrow-left text-lg"></i>
+            </a>
+            <h1 class="text-gray-800 font-semibold truncate max-w-xs sm:max-w-md" title="<%= book.title %>">
+                <%= book.title %>
+            </h1>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <!-- Controls -->
+            <div class="flex bg-gray-100 rounded-lg p-1 mr-4">
+                <button id="zoomOutBtn" class="p-2 hover:bg-white rounded text-gray-600 transition" title="Zoom Out">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <span id="zoomLevel"
+                    class="px-2 py-2 text-xs font-mono text-gray-500 w-12 text-center flex items-center justify-center">100%</span>
+                <button id="zoomInBtn" class="p-2 hover:bg-white rounded text-gray-600 transition" title="Zoom In">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+
+            <!-- Page Nav -->
+            <div class="flex bg-gray-100 rounded-lg p-1 mr-4">
+                <button id="prevBtn" class="p-2 hover:bg-white rounded text-gray-600 transition" title="Previous Page">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="px-2 py-2 text-sm text-gray-600 flex items-center">
+                    <input type="number" id="pageInput"
+                        class="w-12 bg-transparent text-center focus:outline-none border-b border-gray-300" value="1">
+                    <span class="ml-1"> / <span id="totalPages">--</span></span>
+                </div>
+                <button id="nextBtn" class="p-2 hover:bg-white rounded text-gray-600 transition" title="Next Page">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <button id="highlightBtn"
+                class="w-8 h-8 rounded-full bg-yellow-300 hover:bg-yellow-400 border-2 border-white shadow-sm transition"
+                title="Highlight Marker"></button>
+        </div>
+    </header>
+
+    <!-- Viewer Area -->
+    <div id="viewer-container" class="flex-1 w-full relative">
+        <% if (book.format==='pdf' ) { %>
+            <div id="pdf-container"></div>
+            <% } else { %>
+                <div id="epub-viewer"></div>
+                <% } %>
+    </div>
+
+    <!-- Hidden Metadata -->
+    <script>
+        const BOOK_URL = '/uploads/<%= book.filename %>';
+        const BOOK_ID = '<%= book.id %>';
+        const BOOK_FORMAT = '<%= book.format %>';
+    </script>
+
+    <% if (book.format==='pdf' ) { %>
+        <script src="/js/pdf-viewer.js"></script>
+        <% } else { %>
+            <script src="/js/epub-viewer.js"></script>
+            <% } %>
+
+</body>
+
+</html>
